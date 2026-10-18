@@ -1,0 +1,5 @@
+{% if paused %}
+<button id="pause-btn" class="secondary" hx-post="/feed/resume" hx-swap="outerHTML">Resume</button>
+{% else %}
+<button id="pause-btn" class="secondary" hx-post="/feed/pause" hx-swap="outerHTML">Pause</button>
+{% endif %}

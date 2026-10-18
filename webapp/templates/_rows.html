@@ -1,0 +1,13 @@
+<figure>
+<table class="striped">
+  <thead>
+    <tr>
+      <th>Session</th><th>Time</th><th>Protocol</th><th>Attempts / failed</th>
+      <th>IP reputation</th><th>Browser</th><th>Risk</th><th>Attack probability</th>
+    </tr>
+  </thead>
+  <tbody id="rows" hx-get="/feed/next{% if risk %}?risk={{ risk }}{% endif %}" hx-trigger="every 3s" hx-swap="afterbegin">
+    {% for item in items %}{% include "_row.html" %}{% endfor %}
+  </tbody>
+</table>
+</figure>
