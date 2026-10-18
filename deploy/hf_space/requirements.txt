@@ -1,0 +1,9 @@
+# Runtime dependencies of the model API only (torch is installed separately in the Dockerfile).
+# Versions match the environment that trained and saved the model: preprocess.joblib was pickled with scikit-learn 1.8.0.
+fastapi==0.135.2
+uvicorn==0.41.0
+pydantic==2.11.10
+numpy==2.3.2
+pandas==2.3.1
+scikit-learn==1.8.0
+joblib==1.5.3
