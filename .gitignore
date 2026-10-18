@@ -1,5 +1,9 @@
 data/
-artifacts/
+artifacts/*
+# the three files the deployed API needs (23 KB) are committed so Render can build from the repo
+!artifacts/mlp.pt
+!artifacts/preprocess.joblib
+!artifacts/model_meta.json
 .venv/
 __pycache__/
 *.pyc

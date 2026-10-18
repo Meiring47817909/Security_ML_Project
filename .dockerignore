@@ -1,0 +1,21 @@
+# Keep the build context small: only the API code, its requirements and the three model files are needed.
+.venv
+.git
+.superpowers
+.ipynb_checkpoints
+.playwright-mcp
+**/__pycache__
+**/*.pyc
+data
+notebooks
+tests
+reports
+docs
+webapp
+hf_space
+scripts
+artifacts/*
+!artifacts/mlp.pt
+!artifacts/preprocess.joblib
+!artifacts/model_meta.json
+.env
