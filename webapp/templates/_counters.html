@@ -1,0 +1,9 @@
+<div id="counters" hx-get="/counters" hx-trigger="counters from:body" hx-swap="outerHTML">
+  <div class="counters-line">
+    <span class="source-badge">{{ badge }}</span>
+    <span class="agreement" title="Replayed sessions where the prediction (p &ge; 0.5) matches the true label">Agreement with true label: {{ matches }} / {{ total }}</span>
+  </div>
+  {% if show_banner %}
+  <p class="banner" role="alert">No trained model found. Run notebooks/intrusion_model.ipynb to export artifacts, or set MODEL_API_URL.</p>
+  {% endif %}
+</div>

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Score a session · Store Session Monitor{% endblock %}
+{% block content %}
+<p><a href="/">&larr; Back to feed</a></p>
+<h2>Score a session</h2>
+{% if error %}<p class="banner" role="alert">{{ error }}</p>{% endif %}
+<form method="post" action="/sessions" novalidate>
+  <div class="grid-form">
+  {% for name in fields %}
+    <label for="{{ name }}">{{ labels[name] }}
+    {% if name in categories %}
+      <select id="{{ name }}" name="{{ name }}" {% if name in errors %}aria-invalid="true"{% endif %}>
+        {% for opt in categories[name] %}
+        <option value="{{ opt }}" {% if values[name] == opt %}selected{% endif %}>{{ opt }}</option>
+        {% endfor %}
+      </select>
+    {% else %}
+      <input id="{{ name }}" name="{{ name }}" type="text" inputmode="decimal" value="{{ values[name] }}" {% if name in errors %}aria-invalid="true"{% endif %}>
+    {% endif %}
+    {% if name in errors %}<small class="field-error">{{ name }}: {{ errors[name] }}</small>{% endif %}
+    </label>
+  {% endfor %}
+  </div>
+  <button type="submit">Score session</button>
+</form>
+{% endblock %}

@@ -1,0 +1,10 @@
+<tr>
+  <td><a href="/sessions/{{ item.id }}">{{ item.id }}</a></td>
+  <td>{{ item.created|hms }}</td>
+  <td>{{ item.session.protocol_type }}</td>
+  <td>{{ item.session.login_attempts }} / {{ item.session.failed_logins }}</td>
+  <td>{{ "%.2f"|format(item.session.ip_reputation_score) }}</td>
+  <td>{{ item.session.browser_type }}</td>
+  <td><span class="risk risk-{{ item.risk|lower }}">{{ item.risk }}</span></td>
+  <td>{{ item.probability|pct }}</td>
+</tr>

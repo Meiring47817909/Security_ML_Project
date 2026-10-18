@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="toolbar">
+  <nav aria-label="Risk filter">
+    <ul>
+      <li><a href="/" {% if not risk %}aria-current="page"{% endif %}>All</a></li>
+      {% for r in risks %}
+      <li><a href="/?risk={{ r }}" {% if risk == r %}aria-current="page"{% endif %}>{{ r }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+  <div class="actions">
+    {% include "_pause.html" %}
+    <a href="/sessions/new" role="button">Score a session</a>
+  </div>
+</div>
+{% include "_rows.html" %}
+{% endblock %}

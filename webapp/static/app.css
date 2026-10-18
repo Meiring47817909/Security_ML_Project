@@ -1,0 +1,21 @@
+.brand { text-decoration: none; }
+.counters-line { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; font-size: .9rem; }
+.source-badge { padding: .15rem .6rem; border-radius: 1rem; border: 1px solid var(--pico-muted-border-color); }
+.banner { margin: .75rem 0; padding: .6rem .9rem; border-left: 4px solid #c62828; background: rgba(198, 40, 40, .08); }
+.toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; }
+.toolbar .actions { display: flex; gap: .5rem; align-items: center; }
+.toolbar .actions > * { margin: 0; }
+[aria-current="page"] { font-weight: bold; text-decoration: underline; }
+
+/* Risk badges: colour always paired with the text label */
+.risk { display: inline-block; padding: .1rem .55rem; border-radius: .3rem; font-weight: 600; font-size: .85rem; color: #fff; }
+.risk-low { background: #2e7d32; }
+.risk-medium { background: #b26a00; }
+.risk-high { background: #c62828; }
+
+.detail-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+@media (min-width: 992px) { .detail-grid { grid-template-columns: 1fr 1.3fr; } }
+.note, .footnote { font-size: .85rem; color: var(--pico-muted-color); }
+
+.grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); column-gap: 1.5rem; }
+.field-error { color: #c62828; }
