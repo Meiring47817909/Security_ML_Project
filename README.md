@@ -99,8 +99,31 @@ Open http://127.0.0.1:8000. The header badge shows "Hosted model" when the model
 |---|---|---|
 | `MODEL_API_URL` | web app | Base URL of the model service. If unset, or if a request fails or times out (10 s), the web app loads the model locally and keeps working (automatic local fallback). |
 | `ARTIFACTS_DIR` | both | Folder with the exported model files. Default `artifacts`. |
+| `MODEL_API_KEY` | both | Shared secret. If set on the model service, `POST /predict` requires the header `X-API-Key: <key>` (401 otherwise); `/health` and `/docs` stay open and `/health` reports `"auth": "on"`. If set on the web app, it sends that header. Never commit it. |
 
-Current deployment status: both services run locally. Deploying the model service to Hugging Face Spaces is planned but not done yet.
+Opening the model service's bare address (`/`) redirects to `/docs`.
+
+### API key
+
+Generate a key once and keep it private (for example in a password manager):
+
+```powershell
+.venv\Scripts\python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Then set it in both windows before starting the services: `$env:MODEL_API_KEY = "<key>"`. In `/docs`, click **Authorize** and paste the key to try `POST /predict`.
+
+### Hosting on Hugging Face Spaces
+
+`scripts/build_hf_space.py` assembles `hf_space/` (gitignored) from `deploy/hf_space/` (Dockerfile, requirements, Space README), the `intrusion/` and `model_service/` packages and the three model files. Re-run it after retraining.
+
+```powershell
+.venv\Scripts\python scripts\build_hf_space.py
+docker build -t store-session-mlp hf_space
+docker run --rm -p 7860:7860 -e MODEL_API_KEY=<key> store-session-mlp      # test locally: http://127.0.0.1:7860/docs
+```
+
+The Space runs the same API on port 7860, with `MODEL_API_KEY` stored as a Space secret. Point the web app at it with `$env:MODEL_API_URL = "https://<user>-<space>.hf.space"`.
 
 ## 4. Tests
 
@@ -118,7 +141,7 @@ Current deployment status: both services run locally. Deploying the model servic
 | 2.4 Metric graphs (Matplotlib) | 15 | Notebook §13–14: loss curve, metric-vs-epoch curves, ROC, precision-recall, confusion matrix |
 | 2.5 Desktop application | 15 | `model_service/app.py` (FastAPI API) and `webapp/` (admin dashboard on localhost). A localhost web UI is used in place of Tkinter, which the brief allows ("other technologies can be used"). **To do: confirm this choice with the lecturer.** |
 | 2.6 Patience / early stopping | 5 | Notebook §11–12: patience 10 on validation loss, best weights restored |
-| 2.7 Additional features | 10 (bonus) | Separate model API with automatic local fallback; hosting on Hugging Face Spaces planned, not yet deployed |
+| 2.7 Additional features | 10 (bonus) | Separate model API protected by an API key (`X-API-Key`), with automatic local fallback; Docker image for Hugging Face Spaces in `deploy/hf_space/` |
 | 3.1–3.4 Theory | 30 | `reports/theory.md` (references marked `[verify]`) |
 | Missing notebook outputs | -10 if missing | `notebooks/intrusion_model.ipynb` is committed after a full execution with every output and figure saved; `scripts/check_notebook.py ... --min-images 6` checks it |
 | Version control | -10 if missing | Git history in this repository |
@@ -130,7 +153,8 @@ intrusion/        shared package: data, preprocessing, MLP, inference, rule-base
 notebooks/        intrusion_model.py (source) and intrusion_model.ipynb (executed)
 model_service/    FastAPI model API (port 8001)
 webapp/           FastAPI + HTMX admin dashboard (port 8000)
-scripts/          download_data.py, check_notebook.py
+scripts/          download_data.py, check_notebook.py, build_hf_space.py
+deploy/hf_space/  Dockerfile, requirements and README for the Hugging Face Space
 tests/            pytest suite
 reports/          theory.md
 docs/             project brief
