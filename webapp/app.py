@@ -171,7 +171,11 @@ def create_app(client: ModelClient, feed: SessionFeed | None) -> FastAPI:
 
 def _build_default_app() -> FastAPI:
     artifacts = Path(os.environ.get("ARTIFACTS_DIR", "artifacts"))
-    client = ModelClient(os.environ.get("MODEL_API_URL") or None, lambda: Predictor.load(artifacts))
+    client = ModelClient(
+        os.environ.get("MODEL_API_URL") or None,
+        lambda: Predictor.load(artifacts),
+        api_key=os.environ.get("MODEL_API_KEY") or None,
+    )
     csv = artifacts / "test_sessions.csv"
     return create_app(client, SessionFeed.from_csv(csv) if csv.exists() else None)
 

@@ -22,8 +22,10 @@ class ModelClient:
         local_loader: Callable,
         timeout: float = 10.0,
         http: httpx.Client | None = None,
+        api_key: str | None = None,
     ):
         self._remote_url = remote_url.rstrip("/") if remote_url else None
+        self._headers = {"X-API-Key": api_key} if api_key else {}
         self._local_loader = local_loader
         self._http = http or httpx.Client(timeout=timeout)
         self._predictor = None
@@ -45,7 +47,7 @@ class ModelClient:
         if not self._remote_url:
             return None
         try:
-            resp = self._http.post(f"{self._remote_url}/{op}", json=session.model_dump())
+            resp = self._http.post(f"{self._remote_url}/{op}", json=session.model_dump(), headers=self._headers)
             resp.raise_for_status()
             data = resp.json()
             if not isinstance(data, dict):

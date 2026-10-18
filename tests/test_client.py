@@ -125,3 +125,30 @@ def test_concurrent_first_requests_load_once():
     for t in threads:
         t.join()
     assert len(calls) == 1
+
+
+def test_sends_api_key_header_when_configured():
+    seen = {}
+
+    def handler(request):
+        seen["key"] = request.headers.get("X-API-Key")
+        return httpx.Response(200, json={**PRED, "pattern": "p", "actions": []})
+
+    c = ModelClient("http://model", make_loader([]), http=http_with(handler), api_key="secret")
+    assert c.predict(SESSION)["source"] == "remote" and seen["key"] == "secret"
+
+
+def test_no_api_key_header_when_not_configured():
+    seen = {}
+
+    def handler(request):
+        seen["has"] = "X-API-Key" in request.headers
+        return httpx.Response(200, json={**PRED, "pattern": "p", "actions": []})
+
+    ModelClient("http://model", make_loader([]), http=http_with(handler)).predict(SESSION)
+    assert seen["has"] is False
+
+
+def test_falls_back_on_401():
+    c = ModelClient("http://model", make_loader([]), http=http_with(lambda r: httpx.Response(401)), api_key="bad")
+    assert c.predict(SESSION)["source"] == "local"
