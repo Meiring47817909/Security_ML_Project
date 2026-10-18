@@ -28,3 +28,11 @@ def test_predict_extreme_but_valid_values(artifacts_dir):
 def test_artifacts_have_no_shap_background(artifacts_dir):
     assert sorted(p.name for p in artifacts_dir.iterdir()) == ["mlp.pt", "model_meta.json", "preprocess.joblib"]
     assert not hasattr(Predictor.load(artifacts_dir), "explain")
+
+
+def test_predict_applies_login_fix(artifacts_dir):
+    pr = Predictor.load(artifacts_dir)
+    inconsistent = Session(**{**VALID_SESSION, "login_attempts": 1, "failed_logins": 4})
+    corrected = Session(**{**VALID_SESSION, "login_attempts": 4, "failed_logins": 4})
+    assert pr.predict(inconsistent) == pr.predict(corrected)
+    assert inconsistent.login_attempts == 1  # caller's session is not modified

@@ -61,7 +61,7 @@ Files written to `artifacts/` (gitignored): `mlp.pt`, `preprocess.joblib`, `mode
 | 1 | Setup (seed 42) |
 | 2 | Raw data, untouched (SHA-256 fingerprint) |
 | 3 | Data-quality report |
-| 4 | Cleaning, one step per cell |
+| 4 | Cleaning, one step per cell (encryption, identifier, login counts) |
 | 5 | Stratified 70 / 15 / 15 split |
 | 6 | Class balance |
 | 7 | Encode and scale (17 features) |

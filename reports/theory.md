@@ -57,7 +57,7 @@ The dataset is small and tabular, with 17 inputs after encoding. An MLP is a nat
 
 ### Training behaviour
 
-Metrics were logged every epoch for train and validation (loss, accuracy, precision, recall, F1, AUC-ROC) and saved to `artifacts/metrics.csv` (notebook section 12). Early stopping triggered at epoch 64, and the weights of epoch 54 (the lowest validation loss, 0.3274) were restored. The curves behave as expected: in epoch 1 the validation loss is 0.4951 and the validation accuracy 0.7722; by epoch 54 the validation loss is 0.3274 and the validation accuracy 0.8805 (validation precision 0.9835, recall 0.7453, F1 0.8480, AUC 0.8732). After epoch 54 both losses plateau and fluctuate; validation loss does not improve by more than 1e-4 for 10 epochs, which triggers early stopping. The gap between training and validation accuracy at the best epoch is small (0.8965 vs 0.8805), so the model is not badly overfitted. *(Add the loss-curve and metric-curve figures from notebook section 13 here.)*
+Metrics were logged every epoch for train and validation (loss, accuracy, precision, recall, F1, AUC-ROC) and saved to `artifacts/metrics.csv` (notebook section 12). Early stopping triggered at epoch 36, and the weights of epoch 26 (the lowest validation loss, 0.3328) were restored. The curves behave as expected: in epoch 1 the validation loss is 0.4926 and the validation accuracy 0.7722; by epoch 26 the validation loss is 0.3328 and the validation accuracy 0.8791 (validation precision 0.9814, recall 0.7438, F1 0.8462, AUC 0.8705). After epoch 26 both losses plateau and fluctuate; validation loss does not improve by more than 1e-4 for 10 epochs, which triggers early stopping. The gap between training and validation accuracy at the best epoch is small (0.8944 vs 0.8791), so the model is not badly overfitted. *(Add the loss-curve and metric-curve figures from notebook section 13 here.)*
 
 ### Test results
 
@@ -65,25 +65,25 @@ The test set (1,431 sessions) was used once, after training (notebook section 14
 
 | Metric | MLP (test) |
 |---|---|
-| Accuracy | 0.8812 |
-| Precision | 0.9896 |
-| Recall | 0.7422 |
-| F1 | 0.8482 |
-| AUC-ROC | 0.8794 |
+| Accuracy | 0.8798 |
+| Precision | 0.9776 |
+| Recall | 0.7484 |
+| F1 | 0.8478 |
+| AUC-ROC | 0.8804 |
 
-The confusion matrix at threshold 0.5 is: TN = 786, FP = 5, FN = 165, TP = 475. Of the 791 normal sessions, 786 are correctly passed; of the 640 attacks, 475 are caught. *(Add the ROC curve, precision-recall curve and confusion matrix from notebook sections 14.1–14.3.)*
+The confusion matrix at threshold 0.5 is: TN = 780, FP = 11, FN = 161, TP = 479. Of the 791 normal sessions, 780 are correctly passed; of the 640 attacks, 479 are caught. *(Add the ROC curve, precision-recall curve and confusion matrix from notebook sections 14.1–14.3.)*
 
 ### High precision, lower recall
 
-The model's precision is 0.9896: only 5 of 480 sessions flagged as attacks were normal. When it raises an alert, it is almost always right. The recall is 0.7422: 165 of 640 attacks are missed. The missed attacks are sessions whose values look like ordinary sessions, so the features available give the model little to separate them on. For a security setting the trade-off is important. A missed attack (false negative) is usually costlier than a false alarm, so the threshold could be lowered to gain recall, at the price of more false positives; the precision-recall curve in section 14.2 shows how much precision would be lost for each gain in recall. The three-level risk output (Low / Medium / High) partly addresses this by giving the administrator a graded signal rather than a single yes/no.
+The model's precision is 0.9776: only 11 of 490 sessions flagged as attacks were normal. When it raises an alert, it is almost always right. The recall is 0.7484: 161 of 640 attacks are missed. The missed attacks are sessions whose values look like ordinary sessions, so the features available give the model little to separate them on. For a security setting the trade-off is important. A missed attack (false negative) is usually costlier than a false alarm, so the threshold could be lowered to gain recall, at the price of more false positives; the precision-recall curve in section 14.2 shows how much precision would be lost for each gain in recall. The three-level risk output (Low / Medium / High) partly addresses this by giving the administrator a graded signal rather than a single yes/no.
 
 ### A data-quality finding
 
-In 730 of the 9,537 rows, `failed_logins` is greater than `login_attempts`, which is logically impossible for real sessions (you cannot fail more logins than you attempted; notebook section 3). This is a sign that the data is generated, not captured. The rows were kept and the schema of the API does not enforce the rule, because they are part of the dataset; the issue is reported here as a data-quality limitation.
+In 730 of the 9,537 rows, `failed_logins` is greater than `login_attempts`, which is logically impossible for real sessions (you cannot fail more logins than you attempted; notebook section 3). This is a sign that the data is generated, not captured. These rows are 70.7% attacks, against 44.7% overall. Rather than drop them (losing 7.7% of the data and many attack labels), the cleaning step in notebook section 4.3 raises `login_attempts` to equal `failed_logins` in those rows: the smallest change that makes each row consistent (526 rows rise by 1 attempt, 166 by 2, 33 by 3 and 5 by 4). The same correction is applied to live sessions before the model scores them. An earlier run of the same notebook without this step (git commit `66dd9c6`) reached 0.8812 accuracy, 0.9896 precision, 0.7422 recall, 0.8482 F1 and 0.8794 AUC on the same test set; after the correction the results are 0.8798, 0.9776, 0.7484, 0.8478 and 0.8804. Overall the corrected model gets 2 fewer test sessions right (6 more false alarms, 4 more attacks caught), a difference within test-set noise for 1,431 sessions, so the correction makes the data logically consistent without materially changing the model's performance.
 
 ### Is the model effective?
 
-Within the limits of this dataset, largely yes. It reaches 0.8812 accuracy and 0.8794 AUC with very few false alarms (5 in 791 normal sessions), and training is stable, with early stopping preventing overfitting. Its main weakness is recall: about a quarter of attacks are missed. It is not a proven real-world detector: the data is synthetic, and the accuracy would very likely differ on real traffic. The honest conclusion is that the project demonstrates a complete ML pipeline, from raw data to a served model in a working dashboard, not a production-ready intrusion detection system.
+Within the limits of this dataset, largely yes. It reaches 0.8798 accuracy and 0.8804 AUC with very few false alarms (11 in 791 normal sessions), and training is stable, with early stopping preventing overfitting. Its main weakness is recall: about a quarter of attacks are missed. It is not a proven real-world detector: the data is synthetic, and the accuracy would very likely differ on real traffic. The honest conclusion is that the project demonstrates a complete ML pipeline, from raw data to a served model in a working dashboard, not a production-ready intrusion detection system.
 
 ## 3.4 Real-world use of models in cybersecurity
 
@@ -101,7 +101,7 @@ Models can process volumes of events that humans cannot, learn combinations of w
 
 - **False positives and the base-rate problem.** Real traffic is overwhelmingly benign, so even a small false-positive rate produces many false alarms per real attack, which can swamp analysts and make the system useless in practice (Axelsson, 2000 [verify]). In this project the precision of 0.99 depends on the data's 45% attack rate; on a real network where attacks are rare it would be much lower.
 - **The closed-world and semantic-gap problem.** Sommer and Paxson (2010) [verify] argue that intrusion detection differs from typical ML tasks: the cost of errors is high, the traffic is highly variable, outliers are not necessarily attacks, and evaluation is hard, so results from benchmark data rarely carry over to deployments.
-- **Data quality and synthetic data.** Public intrusion datasets are often synthetic or generated in laboratories, and they can contain labelling errors and artefacts. Engelen et al. (2021) [verify] documented errors in the CICIDS2017 dataset, and Arp et al. (2022) [verify] list sampling bias, label inaccuracy and data snooping among the common pitfalls of ML in security. The dataset used here is synthetic and has 730 logically inconsistent rows, so a high score says little about real performance.
+- **Data quality and synthetic data.** Public intrusion datasets are often synthetic or generated in laboratories, and they can contain labelling errors and artefacts. Engelen et al. (2021) [verify] documented errors in the CICIDS2017 dataset, and Arp et al. (2022) [verify] list sampling bias, label inaccuracy and data snooping among the common pitfalls of ML in security. The dataset used here is synthetic and has 730 logically inconsistent rows (corrected during cleaning), so a high score says little about real performance.
 - **Concept drift.** Attacker behaviour, software and normal user behaviour change over time, so a model's performance decays and it must be monitored and retrained (Gama et al., 2014 [verify]; Arp et al., 2022 [verify]).
 - **Adversarial evasion.** Attackers can deliberately craft inputs to evade a model or poison its training data (Biggio & Roli, 2018 [verify]). A model that depends heavily on a few features such as failed logins or IP reputation is easy to evade: an attacker can spread attempts over many IP addresses and sessions.
 - **Evaluation practice.** Arp et al. (2022) [verify] recommend realistic evaluation (time-aware splits, realistic base rates, comparison to simple baselines).
