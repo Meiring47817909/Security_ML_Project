@@ -7,6 +7,7 @@ import joblib
 import numpy as np
 import torch
 
+from intrusion.data import fix_login_counts
 from intrusion.model import MLP
 from intrusion.preprocess import Session, to_frame
 
@@ -45,7 +46,8 @@ class Predictor:
         return cls(model, joblib.load(d / "preprocess.joblib"), meta["version"])
 
     def predict(self, session: Session) -> dict:
-        x = np.asarray(self.preprocessor.transform(to_frame([session])), dtype=np.float32)
+        frame = fix_login_counts(to_frame([session]))  # same correction as the training data
+        x = np.asarray(self.preprocessor.transform(frame), dtype=np.float32)
         with torch.no_grad():
             p = float(torch.sigmoid(self.model(torch.as_tensor(x))).reshape(-1)[0])
         return {"probability": p, "risk": risk_level(p), "prediction": int(p >= THRESHOLD)}

@@ -51,8 +51,17 @@ def drop_identifier(df: pd.DataFrame) -> pd.DataFrame:
     return df.drop(columns=[ID_COLUMN], errors="ignore")
 
 
+def fix_login_counts(df: pd.DataFrame) -> pd.DataFrame:
+    """Every failed login is also a login attempt, so raise login_attempts to failed_logins where it is lower."""
+    out = df.copy()
+    out["login_attempts"] = out["login_attempts"].where(
+        out["login_attempts"] >= out["failed_logins"], out["failed_logins"]
+    )
+    return out
+
+
 def clean(df: pd.DataFrame) -> pd.DataFrame:
-    return drop_identifier(fill_missing_encryption(df))
+    return fix_login_counts(drop_identifier(fill_missing_encryption(df)))
 
 
 def split(df: pd.DataFrame, seed: int = 42) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:

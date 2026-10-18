@@ -44,7 +44,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 from intrusion.data import (
     raw_path, file_sha256, load_raw, quality_report,
-    fill_missing_encryption, drop_identifier, clean, split, TARGET,
+    fill_missing_encryption, drop_identifier, fix_login_counts, clean, split, TARGET,
 )
 from intrusion.preprocess import build_preprocessor, feature_names, NUMERIC, ORIGINAL_FEATURES
 
@@ -76,8 +76,8 @@ raw.head()
 # ## 3. Data-quality report
 # Before changing anything we measure what is wrong with the data: missing values (a model cannot ingest NaN),
 # duplicate rows (would leak between splits), numeric ranges (to spot impossible values) and logical inconsistencies.
-# Rows where `failed_logins > login_attempts` are logically odd (you cannot fail more logins than you attempt).
-# We *report* them but keep them, because the live API must accept the same kind of rows the data contains.
+# Rows where `failed_logins > login_attempts` are logically odd (you cannot fail more logins than you attempt);
+# they are counted here and corrected in step 4.3.
 
 # %%
 report = quality_report(raw)
@@ -94,7 +94,7 @@ display(raw[raw["failed_logins"] > raw["login_attempts"]].head(5))
 # %% [markdown]
 # **Findings.** Only `encryption_used` has missing values; in this dataset a missing value means no encryption was used, so it is a real category
 # rather than an unknown. There are no duplicates and the numeric ranges are plausible. The `failed_logins > login_attempts` rows are
-# a data-quality quirk of this synthetic dataset, noted and kept.
+# a data-quality quirk of this synthetic dataset; step 4.3 makes them consistent.
 
 # %% [markdown]
 # ## 4. Cleaning, one step per cell
@@ -119,16 +119,35 @@ print("columns after :", list(step2.columns))
 print("shape before -> after:", step1.shape, "->", step2.shape)
 
 # %% [markdown]
-# ### 4.3 The full pipeline, and proof that the raw frame is untouched
-# `clean` chains both steps and returns a **new** DataFrame. The assertions show the original `raw` frame still has its NaNs and its `session_id`.
+# ### 4.3 Make login counts consistent
+# Every failed login is also a login attempt, so `failed_logins` can never be larger than `login_attempts`. In the rows where it is,
+# `login_attempts` is raised to equal `failed_logins` (the smallest change that makes the row consistent); `failed_logins` and the label are kept.
+# The trained model's `Predictor` applies the same correction to live sessions, so the API and dashboard see data the same way the model was trained.
+
+# %%
+bad = step2["failed_logins"] > step2["login_attempts"]
+step3 = fix_login_counts(step2)
+cols = ["login_attempts", "failed_logins", TARGET]
+print("rows with failed_logins > login_attempts  before:", int(bad.sum()),
+      "| after:", int((step3["failed_logins"] > step3["login_attempts"]).sum()))
+print("increase in login_attempts on the fixed rows:", (step3.loc[bad, "login_attempts"] - step2.loc[bad, "login_attempts"]).value_counts().sort_index().to_dict())
+display(pd.concat([step2.loc[bad, cols].head(5).add_suffix(" (before)"), step3.loc[bad, cols[:1]].head(5).add_suffix(" (after)")], axis=1))
+
+# %% [markdown]
+# ### 4.4 The full pipeline, and proof that the raw frame is untouched
+# `clean` chains all three steps and returns a **new** DataFrame. The assertions show the original `raw` frame still has its NaNs, its `session_id`
+# and its inconsistent login rows.
 
 # %%
 df = clean(raw)
 assert raw["encryption_used"].isna().sum() > 0, "raw lost its NaNs"
 assert "session_id" in raw.columns, "raw lost session_id"
+assert (raw["failed_logins"] > raw["login_attempts"]).sum() == report["failed_gt_attempts"], "raw login counts changed"
 assert df["encryption_used"].isna().sum() == 0 and "session_id" not in df.columns
-print("raw :", raw.shape, "| NaNs in encryption_used:", raw["encryption_used"].isna().sum(), "| has session_id:", "session_id" in raw.columns)
-print("df  :", df.shape, "| NaNs in encryption_used:", df["encryption_used"].isna().sum(), "| has session_id:", "session_id" in df.columns)
+assert (df["failed_logins"] > df["login_attempts"]).sum() == 0
+for name, frame in (("raw", raw), ("df ", df)):
+    print(f"{name} : {frame.shape} | NaNs in encryption_used: {frame['encryption_used'].isna().sum()} | has session_id: {'session_id' in frame.columns}"
+          f" | failed_logins > login_attempts: {(frame['failed_logins'] > frame['login_attempts']).sum()}")
 print("Assertions passed: cleaning created a new frame and left the raw one unchanged.")
 df.head()
 

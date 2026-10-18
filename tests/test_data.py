@@ -5,6 +5,7 @@ from intrusion.data import (
     drop_identifier,
     file_sha256,
     fill_missing_encryption,
+    fix_login_counts,
     load_raw,
     quality_report,
     split,
@@ -52,3 +53,21 @@ def test_loading_and_cleaning_never_change_raw_file(raw_csv):
     h = file_sha256(raw_csv)
     clean(load_raw(raw_csv))
     assert file_sha256(raw_csv) == h
+
+
+def test_fix_login_counts_fixes_exactly_the_inconsistent_rows(raw_df):
+    before = raw_df.copy(deep=True)
+    bad = raw_df["failed_logins"] > raw_df["login_attempts"]
+    assert bad.sum() > 0
+    out = fix_login_counts(raw_df)
+    pd.testing.assert_frame_equal(raw_df, before)  # input untouched
+    assert (out["failed_logins"] > out["login_attempts"]).sum() == 0
+    assert (out.loc[bad, "login_attempts"] == raw_df.loc[bad, "failed_logins"]).all()
+    pd.testing.assert_frame_equal(out[~bad], raw_df[~bad])  # consistent rows unchanged
+    assert out["failed_logins"].equals(raw_df["failed_logins"])
+
+
+def test_clean_includes_login_fix(raw_df):
+    out = clean(raw_df)
+    assert (out["failed_logins"] > out["login_attempts"]).sum() == 0
+    assert len(out) == len(raw_df)
