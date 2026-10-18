@@ -1,0 +1,13 @@
+# Render Blueprint: in the Render dashboard choose New -> Blueprint and select this repository.
+services:
+  - type: web
+    name: store-session-mlp
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: MODEL_API_KEY
+        sync: false   # Render asks for the value in the dashboard; it is never stored in git

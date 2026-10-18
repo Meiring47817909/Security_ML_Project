@@ -19,4 +19,5 @@ RUN pip install --no-cache-dir --user -r requirements.txt
 COPY --chown=user . .
 
 EXPOSE 7860
-CMD ["uvicorn", "model_service.app:app", "--host", "0.0.0.0", "--port", "7860"]
+# Hosts that assign a port (e.g. Render) set PORT; otherwise use 7860 (Hugging Face)
+CMD ["sh", "-c", "uvicorn model_service.app:app --host 0.0.0.0 --port ${PORT:-7860}"]
