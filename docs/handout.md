@@ -45,7 +45,7 @@
 | "Analysis" text in notebook §14 | ⏳ Placeholder for you to write |
 | Lecturer OK for a web UI instead of Tkinter | ⏳ To ask |
 
-**The current project is `ML_Project_New`.** `ML_Project` is an older, larger version, kept for reference only.
+**The current project is `Security_ML_Project`** (renamed from `ML_Project_New` on 2026-10-19). `ML_Project` is an older, larger version, kept for reference only.
 
 ## 2. Folders and files on this machine
 
@@ -56,8 +56,8 @@ Root: `C:\Users\meiri\Desktop\Claude_Code_Projects\`
 | `ML_Project.md` | The original assignment brief from the lecturer (rubric) |
 | `handout.md` | This file |
 | `mlp-diagram.html` | Interactive diagram of the MLP, tracing two real sessions layer by layer. Open it in any browser; works offline |
-| **`ML_Project_New\`** | **The current project. Work here.** Its own git repo (branch `main`) |
-| `ML_Project\` | Older version (git, branch `main`, 20 commits). It has 3 baseline models, a long EDA, SHAP/XAI explanations and an integrity check. Superseded by `ML_Project_New`; keep for reference |
+| **`Security_ML_Project\`** | **The current project. Work here.** Its own git repo (branch `main`) |
+| `ML_Project\` | Older version (git, branch `main`, 20 commits). It has 3 baseline models, a long EDA, SHAP/XAI explanations and an integrity check. Superseded by `Security_ML_Project`; keep for reference |
 | `ML_Project\docs\superpowers\specs\2026-10-04-store-session-monitor-design.md` | The original full design spec (describes the older version, including XAI and baselines) |
 | `ML_Project\docs\superpowers\plans\2026-10-04-store-session-monitor.md` | The original implementation plan. **Task 11 there is the Hugging Face hosting task**, never done |
 
@@ -65,10 +65,10 @@ Root: `C:\Users\meiri\Desktop\Claude_Code_Projects\`
 - "Inside the Session MLP" diagram. Use the local copy `mlp-diagram.html` instead.
 - "Cyber Threat Text Explorer", for the text dataset we rejected. Not needed.
 
-### Inside `ML_Project_New\`
+### Inside `Security_ML_Project\`
 
 ```
-ML_Project_New/
+Security_ML_Project/
 ├── README.md                     setup, commands, notebook section table, rubric map
 ├── requirements.txt              pip dependencies (torch comes from the system install)
 ├── pytest.ini                    testpaths = tests, pythonpath = .
@@ -104,7 +104,7 @@ ML_Project_New/
 | GPU | NVIDIA GeForce RTX 4070 Laptop (8 GB), CUDA available |
 | Python | 3.13.6 (system install) |
 | PyTorch | 2.11.0+cu128, installed **system-wide**, not in requirements.txt |
-| Virtual env | `ML_Project_New\.venv`, created with `--system-site-packages` so it reuses the system CUDA PyTorch |
+| Virtual env | `Security_ML_Project\.venv`, created with `--system-site-packages` so it reuses the system CUDA PyTorch |
 | Key packages | scikit-learn 1.8.0, pandas 2.3.1, numpy 2.3.2, fastapi 0.135.2, pydantic 2.11.10, httpx 0.28.1, jinja2 3.1.6, uvicorn 0.41.0, joblib 1.5.3, matplotlib 3.10.8, kagglehub 1.0.2, jupytext 1.19.6, nbconvert 7.17.0 |
 | Dataset location | kagglehub cache: `C:\Users\meiri\.cache\kagglehub\datasets\dnkumars\cybersecurity-intrusion-detection-dataset\versions\2\cybersecurity_intrusion_data.csv` |
 | Raw file SHA-256 | `ef92832692c7ad45225d38f637a6a5c2d26d39a10157654b6c56c61a7850d0f7` (must never change) |
@@ -112,7 +112,7 @@ ML_Project_New/
 
 ## 4. Quick-start commands
 
-Run everything from `C:\Users\meiri\Desktop\Claude_Code_Projects\ML_Project_New` in PowerShell.
+Run everything from `C:\Users\meiri\Desktop\Claude_Code_Projects\Security_ML_Project` in PowerShell.
 
 **Fresh setup** (only if `.venv` is missing):
 ```powershell
@@ -174,7 +174,7 @@ From `ML_Project.md` (the lecturer's brief):
 | 3.1 Scenario / 3.2 Architecture / 3.3 Results analysis / 3.4 Real-world use (with academic references) | 3 / 10 / 10 / 7 |
 | Deductions: missing notebook outputs / poor version control | −10 / −10 |
 
-**Where each item is met in `ML_Project_New`:**
+**Where each item is met in `Security_ML_Project`:**
 
 | Item | Where |
 |---|---|
@@ -475,7 +475,7 @@ The difference is 2 test sessions, within noise. The data became consistent with
 2. **The intrusion detection dataset was chosen** because its per-session login features fit the "store admin monitors sessions" scenario.
 3. **Synthetic ceiling.** The label follows hard rules plus noise, so about 88% accuracy is the most any model can reach. The theory report explains this honestly.
 4. **`ML_Project`, the first full build,** had an MLP plus three baselines (LogReg 0.7365, RF 0.8819, HGB 0.8847 accuracy), a long EDA, SHAP explanations (the top features were failed logins, login attempts, IP reputation and browser, about 92% together), Docker-free local services and 70 tests.
-5. **`ML_Project_New`** came from your request for **one model only**. It removed the baselines, the extra EDA (old §6.2–6.7), the comparison chart and the end-of-run integrity check. The setup/raw-data/quality/cleaning/split, encoding, architecture, DataLoaders, metric function, early stopping, training loop, curves, test evaluation and export were all kept.
+5. **`Security_ML_Project`** came from your request for **one model only**. It removed the baselines, the extra EDA (old §6.2–6.7), the comparison chart and the end-of-run integrity check. The setup/raw-data/quality/cleaning/split, encoding, architecture, DataLoaders, metric function, early stopping, training loop, curves, test evaluation and export were all kept.
 6. **XAI (SHAP) was removed entirely.** That covers the notebook, the package, the `/explain` endpoint, the SHAP bars in the dashboard and the `shap` dependency. Consequence: the rubric 2.7 bonus now relies on the separate API plus hosting.
 7. **The playbook became rule-based.** Patterns and actions are decided from session values, not from SHAP, and the dashboard says so.
 8. **Login counts were fixed** (section 8). The fix is applied the same way at training time (`clean`) and at prediction time (`Predictor.predict`).
@@ -539,7 +539,7 @@ Goal: the model API runs publicly on a free Hugging Face **Docker Space**, and t
 
 Open Claude Code in `C:\Users\meiri\Desktop\Claude_Code_Projects` and paste:
 
-> I'm continuing a university ML project. Please read `handout.md` in this folder first: it is the complete handover (status, environment, file-by-file architecture, decisions, pitfalls and remaining work). The current project is `ML_Project_New` (single PyTorch MLP for intrusion detection, FastAPI model API, FastAPI+HTMX dashboard, 79 tests). `ML_Project` is an older reference version. The assignment brief is `ML_Project.md`. Rules: never modify the raw dataset; keep seed 42; edit the notebook via `notebooks/intrusion_model.py` and run it with `.venv\Scripts\python -m nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=1800 notebooks/intrusion_model.ipynb`; run `.venv\Scripts\python -m pytest -q` after code changes; commit to git. Next I want to: <your next task, e.g. "deploy the model API to Hugging Face Spaces following section 17">.
+> I'm continuing a university ML project. Please read `handout.md` in this folder first: it is the complete handover (status, environment, file-by-file architecture, decisions, pitfalls and remaining work). The current project is `Security_ML_Project` (single PyTorch MLP for intrusion detection, FastAPI model API, FastAPI+HTMX dashboard, 79 tests). `ML_Project` is an older reference version. The assignment brief is `ML_Project.md`. Rules: never modify the raw dataset; keep seed 42; edit the notebook via `notebooks/intrusion_model.py` and run it with `.venv\Scripts\python -m nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=1800 notebooks/intrusion_model.ipynb`; run `.venv\Scripts\python -m pytest -q` after code changes; commit to git. Next I want to: <your next task, e.g. "deploy the model API to Hugging Face Spaces following section 17">.
 
 ## 19. Demo script (about 10 minutes)
 

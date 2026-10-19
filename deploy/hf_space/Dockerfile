@@ -1,5 +1,5 @@
 # Hugging Face Docker Space for the Store Session MLP API.
-# Built from ML_Project_New by scripts/build_hf_space.py; the API listens on port 7860 as Spaces require.
+# Built from Security_ML_Project by scripts/build_hf_space.py; the API listens on port 7860 as Spaces require.
 FROM python:3.13-slim
 
 # Spaces run containers as user 1000
