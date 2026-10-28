@@ -5,18 +5,29 @@ A university ML-in-security project. An online store's security admin monitors l
 - Dataset: Kaggle `dnkumars/cybersecurity-intrusion-detection-dataset` (9,537 synthetic sessions, 11 columns).
 - Model: one PyTorch MLP (17 -> 64 -> 32 -> 1) with BatchNorm, dropout, Adam and early stopping.
 - Apps: a model API (FastAPI) **hosted on Render at https://store-session-mlp.onrender.com**, and an admin web app (FastAPI + HTMX, port 8000) that calls it.
-- Theory report draft: `reports/theory.md`. Assignment brief: `docs/project_brief.md`.
+- Theory report: `reports/theory.md`.
 
 All commands below are for Windows PowerShell, run from the project root.
 
 ## 1. Setup
 
+Requires Python 3.13.
+
 ```powershell
+git clone https://github.com/Meiring47817909/Security_ML_Project.git
+cd Security_ML_Project
 python -m venv .venv --system-site-packages
 .venv\Scripts\python -m pip install -r requirements.txt
 ```
 
-`--system-site-packages` reuses an already installed CUDA build of PyTorch. The tests and the apps run on CPU.
+PyTorch is not in `requirements.txt`, because the right build depends on the machine. `--system-site-packages` reuses a PyTorch that is already installed system-wide (the notebook was trained with the CUDA build of 2.11.0). If PyTorch is not installed yet, add it to the venv:
+
+```powershell
+# CPU only (enough for the tests, the apps and the notebook)
+.venv\Scripts\python -m pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cpu
+```
+
+The tests and the apps run on CPU.
 
 Download the dataset (kept in the kagglehub cache, never committed, never modified):
 
@@ -34,10 +45,10 @@ Execute it end to end (this also writes the model files to `artifacts/`, which t
 .venv\Scripts\python -m nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=1800 notebooks/intrusion_model.ipynb
 ```
 
-For interactive use (Jupyter or VS Code), register the venv as a kernel once and select "ML Project New (.venv)":
+For interactive use (Jupyter or VS Code), register the venv as a kernel once and select "Security ML Project (.venv)":
 
 ```powershell
-.venv\Scripts\python -m ipykernel install --user --name ml-project-new --display-name "ML Project New (.venv)"
+.venv\Scripts\python -m ipykernel install --user --name security-ml-project --display-name "Security ML Project (.venv)"
 ```
 
 If you edit `notebooks/intrusion_model.py` (the source of truth), regenerate the notebook and run it again:
@@ -52,7 +63,7 @@ Check that the committed notebook has saved outputs and figures:
 .venv\Scripts\python scripts\check_notebook.py notebooks\intrusion_model.ipynb --min-images 6
 ```
 
-Files written to `artifacts/`: `mlp.pt`, `preprocess.joblib`, `model_meta.json` (committed, needed by the hosted API), `metrics.csv` (per-epoch log) and `test_sessions.csv` (gitignored). After retraining, commit the three model files and push so Render redeploys the new model.
+Files written to `artifacts/`: `mlp.pt`, `preprocess.joblib`, `model_meta.json` (committed, needed by the hosted API), `test_sessions.csv` (committed, the cleaned test split the dashboard replays as its feed) and `metrics.csv` (per-epoch log, gitignored). The committed files mean the apps run straight after cloning, without re-running the notebook. After retraining, commit the model files and push so Render redeploys the new model.
 
 ### Notebook sections
 
@@ -94,6 +105,8 @@ MODEL_API_KEY=<your API key>
 ```
 
 Open http://127.0.0.1:8000. The header badge shows **"Hosted model"** when Render answers and **"Local fallback"** otherwise (the dashboard then scores with its own copy of the model and keeps working).
+
+The hosted API only accepts requests that carry the project's API key, which is not published. Without it (or without a `.env`), the dashboard still works fully: every request falls back to the local model, and the badge shows "Local fallback". To use your own hosted copy, deploy it as in 3.5 with your own key.
 
 Render's free service sleeps after about 15 minutes without requests; the first request can then take up to a minute. Before a demo, wake it by opening https://store-session-mlp.onrender.com/health (or `curl.exe https://store-session-mlp.onrender.com/health`) and wait for `{"status":"ok","model_version":"1.0.0","auth":"on"}`.
 
@@ -179,10 +192,10 @@ Measured: about 0.4 s per request from South Africa once awake; about 243 MB mem
 | 2.2 Train / validation / test split | 5 | Notebook §5: stratified 70/15/15, seed 42, class balance per split |
 | 2.3 Logging of metrics per iteration | 15 | Notebook §12: one row per epoch with loss, accuracy, precision, recall, F1, AUC for train and validation; also saved to `artifacts/metrics.csv` |
 | 2.4 Metric graphs (Matplotlib) | 15 | Notebook §13–14: loss curve, metric-vs-epoch curves, ROC, precision-recall, confusion matrix |
-| 2.5 Desktop application | 15 | `model_service/app.py` (FastAPI API, hosted on Render) and `webapp/` (admin dashboard on localhost). A localhost web UI is used in place of Tkinter, which the brief allows ("other technologies can be used"). **To do: confirm this choice with the lecturer.** |
+| 2.5 Desktop application | 15 | `model_service/app.py` (FastAPI API, hosted on Render) and `webapp/` (admin dashboard on localhost). A localhost web UI is used in place of Tkinter, which the brief allows ("other technologies can be used") |
 | 2.6 Patience / early stopping | 5 | Notebook §11–12: patience 10 on validation loss, best weights restored |
 | 2.7 Additional features | 10 (bonus) | **Model hosted** as a Docker web service on Render (https://store-session-mlp.onrender.com/docs), protected by an API key (`X-API-Key`), with automatic local fallback in the dashboard |
-| 3.1–3.4 Theory | 30 | `reports/theory.md` (references marked `[verify]`) |
+| 3.1–3.4 Theory | 30 | `reports/theory.md` |
 | Missing notebook outputs | -10 if missing | `notebooks/intrusion_model.ipynb` is committed after a full execution with every output and figure saved; `scripts/check_notebook.py ... --min-images 6` checks it |
 | Version control | -10 if missing | Git history in this repository |
 
@@ -200,5 +213,6 @@ render.yaml       Render Blueprint (free Docker web service)
 deploy/hf_space/  Hugging Face Space variant (not used: Docker Spaces need PRO)
 tests/            pytest suite
 reports/          theory.md
-docs/             project brief
+artifacts/        trained model files and the dashboard's feed data
+mlp-diagram.html  diagram of the MLP architecture
 ```

@@ -4,6 +4,8 @@ artifacts/*
 !artifacts/mlp.pt
 !artifacts/preprocess.joblib
 !artifacts/model_meta.json
+# the cleaned test split the dashboard replays as its live feed (108 KB), so it works straight after cloning
+!artifacts/test_sessions.csv
 .venv/
 __pycache__/
 *.pyc
