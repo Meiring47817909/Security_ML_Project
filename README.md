@@ -5,7 +5,6 @@ A university ML-in-security project. An online store's security admin monitors l
 - Dataset: Kaggle `dnkumars/cybersecurity-intrusion-detection-dataset` (9,537 synthetic sessions, 11 columns).
 - Model: one PyTorch MLP (17 -> 64 -> 32 -> 1) with BatchNorm, dropout, Adam and early stopping.
 - Apps: a model API (FastAPI) **hosted on Render at https://store-session-mlp.onrender.com**, and an admin web app (FastAPI + HTMX, port 8000) that calls it.
-- Theory report: `reports/theory.md`.
 
 All commands below are for Windows PowerShell, run from the project root.
 
@@ -195,7 +194,7 @@ Measured: about 0.4 s per request from South Africa once awake; about 243 MB mem
 | 2.5 Desktop application | 15 | `model_service/app.py` (FastAPI API, hosted on Render) and `webapp/` (admin dashboard on localhost). A localhost web UI is used in place of Tkinter, which the brief allows ("other technologies can be used") |
 | 2.6 Patience / early stopping | 5 | Notebook §11–12: patience 10 on validation loss, best weights restored |
 | 2.7 Additional features | 10 (bonus) | **Model hosted** as a Docker web service on Render (https://store-session-mlp.onrender.com/docs), protected by an API key (`X-API-Key`), with automatic local fallback in the dashboard |
-| 3.1–3.4 Theory | 30 | `reports/theory.md` |
+| 3.1–3.4 Theory | 30 | Separate written report (not in this repository) |
 | Missing notebook outputs | -10 if missing | `notebooks/intrusion_model.ipynb` is committed after a full execution with every output and figure saved; `scripts/check_notebook.py ... --min-images 6` checks it |
 | Version control | -10 if missing | Git history in this repository |
 
@@ -212,7 +211,6 @@ render.yaml       Render Blueprint (free Docker web service)
 .env.example      template for .env (MODEL_API_URL, MODEL_API_KEY)
 deploy/hf_space/  Hugging Face Space variant (not used: Docker Spaces need PRO)
 tests/            pytest suite
-reports/          theory.md
 artifacts/        trained model files and the dashboard's feed data
 mlp-diagram.html  diagram of the MLP architecture
 ```
