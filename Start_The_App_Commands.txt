@@ -1,0 +1,15 @@
+To use hosted model:
+.venv\Scripts\python -m uvicorn webapp.app:app --port 8000 --env-file .env
+Open: http://127.0.0.1:8000
+
+If you want to run everything locally instead (no internet API)
+
+Use two terminals, both in Security_ML_Project:
+# Terminal 1: local model API
+.venv\Scripts\python -m uvicorn model_service.app:app --port 8001
+
+# Terminal 2: dashboard pointed at the local API
+$env:MODEL_API_URL = "http://127.0.0.1:8001"
+$env:MODEL_API_KEY = ""
+.venv\Scripts\python -m uvicorn webapp.app:app --port 8000
+The empty MODEL_API_KEY line matters if you're reusing a terminal where you set the key before. The local API runs without a key unless you set one.
